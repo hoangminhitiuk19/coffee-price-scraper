@@ -1,0 +1,14 @@
+# Ignore environment files
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore temporary folders and screenshots
+/screenshots
+
+# Ignore IDE/project files
+.vscode/
+.idea/
+*.log
