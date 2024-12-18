@@ -91,12 +91,9 @@ def insert_data_to_supabase(data):
             change = lines[i + 2].strip() if i + 2 < len(lines) else None
 
             # Ensure price and change are valid
-            if price and change and price.replace(",", "").isdigit() and (change.startswith("+") or change.startswith("-")):
+            if price and change and price.replace(",", "").isdigit():
                 # Convert price to float
                 price_value = float(price.replace(",", ""))
-
-                # Convert change to float (preserve + or - sign)
-                change_value = float(change)
 
                 # Convert province to simplified format
                 simplified_province = province_corrections.get(province, province)
@@ -105,7 +102,7 @@ def insert_data_to_supabase(data):
                     "date": current_date,
                     "province": simplified_province,  # Use simplified province
                     "price": price_value,
-                    "change": change_value  # Store as float with sign
+                    "change": change  # Store as TEXT
                 })
             i += 3  # Move to the next set (province, price, change)
         else:
