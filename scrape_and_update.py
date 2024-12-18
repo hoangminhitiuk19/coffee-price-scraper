@@ -61,16 +61,21 @@ def extract_text(image):
 
 def insert_data_to_supabase(data):
     """
-    Extract relevant table data and insert it into Supabase.
+    Extract relevant table data, modify province names, and insert it into Supabase.
     """
     table_name = "coffee_prices"
     current_date = datetime.now().strftime("%Y-%m-%d")
 
-    # List of valid provinces
+    # List of valid provinces (in original Vietnamese format)
     valid_provinces = ["Đắk Lắk", "Lâm", "Gia Lai", "Đắk Nông"]
 
-    # Province name corrections
-    province_corrections = {"Lâm": "Lâm Đồng"}
+    # Province name corrections (Vietnamese to simplified format)
+    province_corrections = {
+        "Đắk Lắk": "Dak Lak",
+        "Lâm": "Lam Dong",  # Simplified and corrected
+        "Gia Lai": "Gia Lai",  # No change needed
+        "Đắk Nông": "Dak Nong"
+    }
 
     # Split the text into lines
     lines = data.splitlines()
@@ -86,13 +91,21 @@ def insert_data_to_supabase(data):
             change = lines[i + 2].strip() if i + 2 < len(lines) else None
 
             # Ensure price and change are valid
-            if price and change and price.replace(",", "").isdigit() and change.startswith("+"):
-                province = province_corrections.get(province, province)
+            if price and change and price.replace(",", "").isdigit() and (change.startswith("+") or change.startswith("-")):
+                # Convert price to float
+                price_value = float(price.replace(",", ""))
+
+                # Convert change to float (preserve + or - sign)
+                change_value = float(change)
+
+                # Convert province to simplified format
+                simplified_province = province_corrections.get(province, province)
+
                 structured_data.append({
                     "date": current_date,
-                    "province": province,
-                    "price": price,
-                    "change": change
+                    "province": simplified_province,  # Use simplified province
+                    "price": price_value,
+                    "change": change_value  # Store as float with sign
                 })
             i += 3  # Move to the next set (province, price, change)
         else:
@@ -104,6 +117,7 @@ def insert_data_to_supabase(data):
     for entry in structured_data:
         response = supabase.table(table_name).insert(entry).execute()
         print(f"Inserted: {entry}, Response: {response}")
+
 
 
 def main():
